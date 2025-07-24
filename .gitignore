@@ -1,4 +1,10 @@
-*.log
 .ipynb_checkpoints
 .DS_Store
-forecast*.xlsx
+
+data/
+logs/
+output/
+
+*.xlsx
+*.csv
+*.json
