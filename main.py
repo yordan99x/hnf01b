@@ -54,61 +54,61 @@ logging.info("BEGIN PYTHON FORECAST PROGRAM FOR SPAREPARTS")
 # API Call
 
 # Retrive data from API
-logging.info('BEGIN Retrieving API')
+#logging.info('BEGIN Retrieving API')
 
-max_retries=8
-delay=2
+#max_retries=8
+#delay=2
 
 # Initialize Start and End Date
-start_date = (datetime.today().replace(day=1) - relativedelta(months=16)).strftime("%d-%m-%Y") 
-end_date = (datetime.today().replace(day=1) - relativedelta(months=1)).strftime("%d-%m-%Y")  
+#start_date = (datetime.today().replace(day=1) - relativedelta(months=16)).strftime("%d-%m-%Y") 
+#end_date = (datetime.today().replace(day=1) - relativedelta(months=1)).strftime("%d-%m-%Y")  
 
-logging.info(f"API Data From Start Date: {start_date} to End Date: {end_date}")
+#logging.info(f"API Data From Start Date: {start_date} to End Date: {end_date}")
 
-load_dotenv()
-internal_key = os.getenv("INTERNAL_KEY")
-base_url = os.getenv("BASE_URL")
+#load_dotenv()
+#internal_key = os.getenv("INTERNAL_KEY")
+#base_url = os.getenv("BASE_URL")
 
-params = {
-    "start-date": start_date,
-    "end-date": end_date,
-    "exclude-older": start_date,
-    "branch": "",
-    "agency": "",
-    "partno": "LF  670"
-}
+#params = {
+#    "start-date": start_date,
+#    "end-date": end_date,
+#    "exclude-older": start_date,
+#    "branch": "",
+#    "agency": "",
+#    "partno": "LF  670"
+#}
 
-headers = {
-    "x-api-key": internal_key
-}
+#headers = {
+#    "x-api-key": internal_key
+#}
 
-url = base_url + "/bckground/precalc/get-demand-call?" + "&".join(
-    f"{quote(str(k))}={quote(str(v))}" for k, v in params.items()
-)
+#url = base_url + "/bckground/precalc/get-demand-call?" + "&".join(
+#    f"{quote(str(k))}={quote(str(v))}" for k, v in params.items()
+#)
 
-for attempt in range(1, max_retries + 1):
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        if 'data' in data and 'data-count' in data:
-            logging.info(str(data['month-count']) + " Month Data Retrived")
-            logging.info(str(data['data-count']) + " Data retrived from API")
-            df = pd.DataFrame(data['data'])
-            break
-        else:
-            logging.info("Error: Unexpected API response format")
-            break
-    except requests.RequestException as e:
-        logging.info(f"Attempt {attempt}: API request failed - {e}")
-        if attempt < max_retries:
-            time.sleep(delay * (2 ** (attempt - 1)))  # Exponential backoff
-        else:
-            logging.info("Max retries reached. Exiting.")
-            sys.exit(1)
+#for attempt in range(1, max_retries + 1):
+#    try:
+#        response = requests.get(url, headers=headers)
+#        response.raise_for_status()
+#        data = response.json()
+#        if 'data' in data and 'data-count' in data:
+#            logging.info(str(data['month-count']) + " Month Data Retrived")
+#            logging.info(str(data['data-count']) + " Data retrived from API")
+#            df = pd.DataFrame(data['data'])
+#            break
+#        else:
+#            logging.info("Error: Unexpected API response format")
+#            break
+#    except requests.RequestException as e:
+#        logging.info(f"Attempt {attempt}: API request failed - {e}")
+#        if attempt < max_retries:
+#            time.sleep(delay * (2 ** (attempt - 1)))  # Exponential backoff
+#        else:
+#            logging.info("Max retries reached. Exiting.")
+#            sys.exit(1)
 
-display(df.head())
-display(df.tail())
+#display(df.head())
+#display(df.tail())
 
 
 # %%
@@ -125,12 +125,13 @@ display(df.tail())
 
 
 # df = pd.read_excel("data/dummy2.xlsx", sheet_name="noBTM", skiprows=4, usecols="A,B,C,M:AB")
-# df = df.rename(columns={"Brc": "branch", "Agc": "agency", "P/N": "partno"})
+df = pd.read_excel("data/dummy3.xlsx", sheet_name="noBTM", skiprows=4)
+df = df.rename(columns={"Brc": "branch", "Agc": "agency", "P/N": "partno"})
 # # Combine D-1 to D-16 columns into a single 'd' column as an array
-# d_cols = [f"D-{i}" for i in range(1, 17)]
-# df["d"] = df[d_cols].values.tolist()
-# df = df.drop(columns=d_cols)
-# display(df.head(10))
+d_cols = [f"D-{i}" for i in range(1, 17)]
+df["d"] = df[d_cols].values.tolist()
+df = df.drop(columns=d_cols)
+#display(df.head(10))
 
 
 # %%
@@ -933,47 +934,49 @@ logging.info(f"Excel File Created: {filename}, Size: {file_size:.2f} MB")
 # %%
 
 
-# Send Data Back To API
-logging.info("BEGIN Constructing Final Data and send it back to API")
+# # Send Data Back To API
+# logging.info("BEGIN Constructing Final Data and send it back to API")
 
-url = base_url + "/bckground/precalc/post-demand-call"
+# url = base_url + "/bckground/precalc/post-demand-call"
 
-# construct result with branch, agency, partno
-result = df[['branch', 'agency', 'partno', 'FD_final', 'std_12_FD', 'mean_12_FD', 'ub_FD']]
+# # construct result with branch, agency, partno
+# result = df[['branch', 'agency', 'partno', 'FD_final', 'std_12_FD', 'mean_12_FD', 'ub_FD']]
 
-# change column name
-result.columns = ['branch', 'agency', 'partno', 'fd', 'std', 'mean', 'ub']
+# # change column name
+# result.columns = ['branch', 'agency', 'partno', 'fd', 'std', 'mean', 'ub']
 
-# result = df.drop('d', axis=1)
-result_json = result.to_dict(orient='records')
+# # result = df.drop('d', axis=1)
+# result_json = result.to_dict(orient='records')
 
-# Save result_json to output folder as JSON file
-json_filename = "output/forecast_result_" + time.strftime("%Y-%m-%d") + ".json"
-with open(json_filename, "w", encoding="utf-8") as json_file:
-    json.dump(result_json, json_file, ensure_ascii=False, indent=2)
-logging.info(f"Result JSON saved to: {json_filename}")
+# # Save result_json to output folder as JSON file
+# json_filename = "output/forecast_result_" + time.strftime("%Y-%m-%d") + ".json"
+# with open(json_filename, "w", encoding="utf-8") as json_file:
+#     json.dump(result_json, json_file, ensure_ascii=False, indent=2)
+# logging.info(f"Result JSON saved to: {json_filename}")
 
 
-logging.info("Start Sending " + str(len(result)) + " Row To API")
+# logging.info("Start Sending " + str(len(result)) + " Row To API")
 
-for attempt in range(1, max_retries + 1):
-    try:
-        response = requests.post(url, json=result_json, headers=headers)
-        response.raise_for_status() 
-        logging.info("Send API Complete")
-        logging.info(f"Status Code: {response.status_code}")
+# for attempt in range(1, max_retries + 1):
+#     try:
+#         response = requests.post(url, json=result_json, headers=headers)
+#         response.raise_for_status() 
+#         logging.info("Send API Complete")
+#         logging.info(f"Status Code: {response.status_code}")
 
-        if response.status_code == 200:
-            logging.info(f"Response Body: {response.text}")
-        else:
-            logging.info("Send Failed")
+#         if response.status_code == 200:
+#             logging.info(f"Response Body: {response.text}")
+#         else:
+#             logging.info("Send Failed")
 
-        break
-    except requests.RequestException as e:
-        logging.info(f"Attempt {attempt}: API request failed - {e} - {response.text}")
-        if attempt < max_retries:
-            time.sleep(delay * (2 ** (attempt - 1)))  # Exponential backoff
-        else:
-            logging.info("Max retries reached. Exiting.")
-            sys.exit(1)  # Stop execution after max retries
+#         break
+#     except requests.RequestException as e:
+#         logging.info(f"Attempt {attempt}: API request failed - {e} - {response.text}")
+#         if attempt < max_retries:
+#             time.sleep(delay * (2 ** (attempt - 1)))  # Exponential backoff
+#         else:
+#             logging.info("Max retries reached. Exiting.")
+#             sys.exit(1)  # Stop execution after max retries
 
+
+# %%
