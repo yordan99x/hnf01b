@@ -466,13 +466,6 @@ def metric(x):
         relative_errors = np.abs(y_true - y_pred) / np.abs(y_true - y_naive)
         relative_errors = relative_errors.replace([np.inf, -np.inf], np.nan).dropna()
 
-        # Compute MdRAE and GMRAE
-        if not relative_errors.empty:
-            mdrae = np.median(relative_errors)
-            gmrae = np.exp(np.mean(np.log(relative_errors)))
-        else:
-            mdrae, gmrae = np.nan, np.nan
-
         # Compute MASE
         mase = mae / naive_mae if naive_mae > 0 else np.nan
 
@@ -487,8 +480,7 @@ def metric(x):
         smape = 100 * smape_values.mean() if not smape_values.empty else np.nan
 
         result.append({
-            'model': model, 'RMSE': rmse, 'MAE': mae, 'R2': r2,
-            'MdRAE': mdrae, 'GMRAE': gmrae, 'MASE': mase, 'MAPE': mape, 'SMAPE': smape
+            'model': model, 'RMSE': rmse, 'MAE': mae, 'R2': r2, 'MASE': mase, 'MAPE': mape, 'SMAPE': smape
         })
 
     metrics_df = pd.DataFrame(result)
@@ -819,13 +811,6 @@ def metric_FD(x):
         relative_errors = np.abs(y_true - y_pred) / np.abs(y_true - y_naive)
         relative_errors = relative_errors.replace([np.inf, -np.inf], np.nan).dropna()
 
-        # Compute MdRAE and GMRAE
-        if not relative_errors.empty:
-            mdrae = np.median(relative_errors)
-            gmrae = np.exp(np.mean(np.log(relative_errors)))
-        else:
-            mdrae, gmrae = np.nan, np.nan
-
         # Compute MASE
         mase = mae / naive_mae if naive_mae > 0 else np.nan
 
@@ -840,8 +825,7 @@ def metric_FD(x):
         smape = 100 * smape_values.mean() if not smape_values.empty else np.nan
 
         result.append({
-            'model': model, 'RMSE': rmse, 'MAE': mae, 'R2': r2,
-            'MdRAE': mdrae, 'GMRAE': gmrae, 'MASE': mase, 'MAPE': mape, 'SMAPE': smape
+            'model': model, 'RMSE': rmse, 'MAE': mae, 'R2': r2, 'MASE': mase, 'MAPE': mape, 'SMAPE': smape
         })
 
     return result  # Returning the metrics list
