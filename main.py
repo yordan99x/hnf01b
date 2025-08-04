@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[356]:
-
+# %% 
+# Import Libraries
 
 import numpy as np
 import pandas as pd
@@ -17,6 +14,8 @@ import logging
 import os
 import json
 
+from IPython.display import display
+from urllib.parse import quote
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -28,10 +27,11 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from statsmodels.tsa.api import SimpleExpSmoothing, Holt, ExponentialSmoothing
 
-pd.set_option('display.max_colwidth', 200)
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", 0)
 
-
-# In[357]:
+# %% 
+# Configurations
 
 
 # create folder logs/forecast.log if not exist
@@ -50,8 +50,8 @@ logging.info("="*40)
 logging.info("BEGIN PYTHON FORECAST PROGRAM FOR SPAREPARTS")
 
 
-# In[358]:
-
+# %% 
+# API Call
 
 # Retrive data from API
 logging.info('BEGIN Retrieving API')
@@ -70,7 +70,6 @@ internal_key = os.getenv("INTERNAL_KEY")
 base_url = os.getenv("BASE_URL")
 
 params = {
-    "key": internal_key,
     "start-date": start_date,
     "end-date": end_date,
     "exclude-older": start_date,
@@ -79,11 +78,17 @@ params = {
     "partno": "LF  670"
 }
 
-url = base_url + "/bckground/precalc/getdemandcall"
-    
+headers = {
+    "x-api-key": internal_key
+}
+
+url = base_url + "/bckground/precalc/get-demand-call?" + "&".join(
+    f"{quote(str(k))}={quote(str(v))}" for k, v in params.items()
+)
+
 for attempt in range(1, max_retries + 1):
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
         if 'data' in data and 'data-count' in data:
@@ -102,11 +107,11 @@ for attempt in range(1, max_retries + 1):
             logging.info("Max retries reached. Exiting.")
             sys.exit(1)
 
-# display(df.head())
-# display(df.tail())
+display(df.head())
+display(df.tail())
 
 
-# In[359]:
+# %%
 
 
 # # USING DUMMY 1 DATA INSTEAD OF API DATA
@@ -116,7 +121,7 @@ for attempt in range(1, max_retries + 1):
 # display(df.head())
 
 
-# In[360]:
+# %%
 
 
 # df = pd.read_excel("data/dummy2.xlsx", sheet_name="noBTM", skiprows=4, usecols="A,B,C,M:AB")
@@ -128,7 +133,7 @@ for attempt in range(1, max_retries + 1):
 # display(df.head(10))
 
 
-# In[361]:
+# %%
 
 
 # Contruct All Branch Data and Concat It To DF
@@ -152,7 +157,7 @@ logging.info(f"All Branch Data Constructed And Merged With DF With Total Data {l
 # display(df.tail())
 
 
-# In[362]:
+# %%
 
 
 logging.info("BEGIN Mean, Std, UB Calculation, and Construct Clipping Data")
@@ -172,7 +177,7 @@ df['clipped_d'] = df.apply( lambda row: np.clip(row['d'][-13:-1], 0, row['ub']).
 # display(df.tail())
 
 
-# In[363]:
+# %%
 
 
 logging.info("BEGIN Moving Average Calculation")
@@ -198,7 +203,7 @@ df['ma_result'] = df['ma'].apply(lambda x: x[-1])
 # display(df.tail())
 
 
-# In[364]:
+# %%
 
 
 logging.info("BEGIN Weighted Moving Average Calculation")
@@ -267,7 +272,7 @@ for idx, row in df.iterrows():
 # display(df.tail())
 
 
-# In[365]:
+# %%
 
 
 logging.info("BEGIN Exponential Weighted Moving Average Calculation")
@@ -304,7 +309,7 @@ df['ewma'], df['ewma_result'] = zip(*df['clipped_d'].apply(lambda x: ewma_foreca
 # display(df.tail())
 
 
-# In[366]:
+# %%
 
 
 logging.info("BEGIN Linear Reggression Calculation")
@@ -325,7 +330,7 @@ df['lr_result'] = df['lr'].apply(lambda x: x[-1:])
 # display(df.tail())
 
 
-# In[367]:
+# %%
 
 
 logging.info("BEGIN Polynomial Reggression Calculation")
@@ -356,7 +361,7 @@ df['pr3_result'] = df['pr3'].apply(lambda x: x[-1:])
 # display(df.tail())
 
 
-# In[368]:
+# %%
 
 
 logging.info("BEGIN Simple Exponential Smoothing Calculation")
@@ -378,7 +383,7 @@ df['ses_result'] = df['ses'].apply(lambda x: x[-1:])
 # display(df.tail())
 
 
-# In[369]:
+# %%
 
 
 logging.info("BEGIN Double Exponential Smoothing Calculation")
@@ -424,7 +429,7 @@ df['des_result'] = df['des'].apply(lambda x: x[-1:])  # Get last predicted value
 
 
 
-# In[370]:
+# %%
 
 
 logging.info("BEGIN Metric Calculation")
@@ -525,7 +530,7 @@ df['note'] = np.where(df['best_r2'] < 0.25, "R2 < 0.25", "Good")
 
 
 
-# In[371]:
+# %%
 
 
 #kalkulasi semua model D-0
@@ -539,7 +544,7 @@ df['clipped_d_FD'] = df.apply(lambda row: np.clip(row['d'][-12:], 0, row['ub_FD'
 # display(df.tail())
 
 
-# In[372]:
+# %%
 
 
 logging.info("BEGIN Moving Average Calculation")
@@ -564,7 +569,7 @@ df['ma_result_FD'] = df['ma_FD'].apply(lambda x: x[-1])
 # display(df.tail())
 
 
-# In[373]:
+# %%
 
 
 logging.info("BEGIN Weighted Moving Average Calculation for FD")
@@ -633,7 +638,7 @@ for idx, row in df.iterrows():
 # display(df.tail())  
 
 
-# In[374]:
+# %%
 
 
 # EWMA
@@ -672,7 +677,7 @@ df['ewma_FD'], df['ewma_result_FD'] = zip(*df['clipped_d_FD'].apply(lambda x: ew
 # display(df.tail())
 
 
-# In[375]:
+# %%
 
 
 #LR
@@ -690,7 +695,7 @@ df['lr_result_FD'] = df['lr_FD'].apply(lambda x: x[-1:])
 # display(df.tail())
 
 
-# In[376]:
+# %%
 
 
 #PR2&3
@@ -715,7 +720,7 @@ df['pr3_result_FD'] = df['pr3_FD'].apply(lambda x: x[-1:])
 # display(df.tail())
 
 
-# In[377]:
+# %%
 
 
 #SES
@@ -732,7 +737,7 @@ df['ses_result_FD'] = df['ses_FD'].apply(lambda x: x[-1:])
 # display(df.tail())
 
 
-# In[378]:
+# %%
 
 
 #DES
@@ -777,7 +782,7 @@ df['des_result_FD'] = df['des_FD'].apply(lambda x: x[-1:])  # Get last predicted
 # display(df.tail())
 
 
-# In[379]:
+# %%
 
 
 logging.info("BEGIN Metric Calculation for _FD")
@@ -857,7 +862,7 @@ df['r2_status_FD'] = np.where(df['best_r2_FD'] < 0.25, "R2 < 0.25", "Good")
 # display(df.tail())
 
 
-# In[380]:
+# %%
 
 
 def apply_best_model_forecast(row):
@@ -913,13 +918,13 @@ df = df[column_order]
 # display(df.tail())
 
 
-# In[381]:
+# %%
 
 
 logging.info("Forecast Calculation Completed")
 
 
-# In[382]:
+# %%
 
 
 logging.info("Begin Creating Excel For DataFrame")
@@ -941,13 +946,13 @@ logging.info(f"Excel File Created: {filename}, Size: {file_size:.2f} MB")
 
 
 
-# In[383]:
+# %%
 
 
 # Send Data Back To API
 logging.info("BEGIN Constructing Final Data and send it back to API")
 
-url = base_url + "/bckground/precalc/postdemandcall"
+url = base_url + "/bckground/precalc/post-demand-call"
 
 # construct result with branch, agency, partno
 result = df[['branch', 'agency', 'partno', 'FD_final', 'std_12_FD', 'mean_12_FD', 'ub_FD']]
@@ -957,7 +962,6 @@ result.columns = ['branch', 'agency', 'partno', 'fd', 'std', 'mean', 'ub']
 
 # result = df.drop('d', axis=1)
 result_json = result.to_dict(orient='records')
-api_params = {"key": "secretkey"}
 
 # Save result_json to output folder as JSON file
 json_filename = "output/forecast_result_" + time.strftime("%Y-%m-%d") + ".json"
@@ -970,7 +974,7 @@ logging.info("Start Sending " + str(len(result)) + " Row To API")
 
 for attempt in range(1, max_retries + 1):
     try:
-        response = requests.post(url, json=result_json, params=api_params)
+        response = requests.post(url, json=result_json, headers=headers)
         response.raise_for_status() 
         logging.info("Send API Complete")
         logging.info(f"Status Code: {response.status_code}")
