@@ -890,7 +890,8 @@ for i in range(num_months - 1, 0, -1):  # From 12 to 1
     df[f'pred_{i}_FD'] = df.apply(lambda x: extract_forecast_values(x, i), axis=1)
 
 # Ensure FD_forecast contains only numeric values
-df['FD_final'] = np.maximum(0, df['FD_forecast'].astype(int).apply(round))
+df_all['FD_final'] = np.maximum(0, df_all['FD_forecast'].round().astype(int))
+
 # Get all columns except the last four we want to reorder
 columns_to_keep = [col for col in df.columns if col not in ['best_model', 'metrics', 'FD_forecast', 'FD_final']]
 
