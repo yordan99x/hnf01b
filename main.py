@@ -125,7 +125,7 @@ logging.info("BEGIN PYTHON FORECAST PROGRAM FOR SPAREPARTS")
 
 
 # df = pd.read_excel("data/dummy2.xlsx", sheet_name="noBTM", skiprows=4, usecols="A,B,C,M:AB")
-df = pd.read_excel("data/dummy3.xlsx", sheet_name="noBTM", skiprows=4)
+df = pd.read_excel("data/agc 23 aug 25.xlsx", sheet_name="NoBTM", skiprows=4)
 df = df.rename(columns={"Brc": "branch", "Agc": "agency", "P/N": "partno"})
 # # Combine D-1 to D-16 columns into a single 'd' column as an array
 d_cols = [f"D-{i}" for i in range(1, 17)]
